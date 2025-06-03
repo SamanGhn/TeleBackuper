@@ -39,7 +39,7 @@ function install() {
     echo -e "\n${YELLOW}🔧 Generating config.py ...${RESET}"
     echo "BOT_TOKEN = '$BOT_TOKEN'" > $CONFIG_FILE
     echo "CHAT_ID = '$CHAT_ID'" >> $CONFIG_FILE
-    echo "DIRECTORIES = [$(
+    echo "BACKUP_DIRECTORIES = [$(
         IFS=',' read -ra ADDR <<< "$DIRS"
         for i in "${ADDR[@]}"; do
             printf "'%s'," "$(echo $i | xargs)"
