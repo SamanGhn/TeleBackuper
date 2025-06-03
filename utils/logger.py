@@ -1,14 +1,10 @@
 import logging
+from rich.logging import RichHandler
 
-def setup_logger(name: str = "backup_logger") -> logging.Logger:
-    logger = logging.getLogger(name)
-    logger.setLevel(logging.INFO)
-    
-    handler = logging.StreamHandler()
-    formatter = logging.Formatter("[%(asctime)s] %(levelname)s - %(message)s")
-    handler.setFormatter(formatter)
-    
-    if not logger.hasHandlers():
-        logger.addHandler(handler)
-    
-    return logger
+def setup_logger():
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s - %(levelname)s - %(message)s",
+        handlers=[RichHandler()]
+    )
+    return logging.getLogger("TeleBackuper")

@@ -1,10 +1,12 @@
-import schedule
-import time
-from main import run_backup
+import os
+import subprocess
 
-def start_scheduler():
-    schedule.every().day.at("02:00").do(run_backup)  # ساعت ۲ نصف شب
-    
-    while True:
-        schedule.run_pending()
-        time.sleep(1)
+def add_cron_job(interval_hours):
+    command = f"0 */{interval_hours} * * * /usr/bin/python3 {os.path.abspath('main.py')}"
+    existing_crontab = subprocess.getoutput("crontab -l || true")
+
+    if command in existing_crontab:
+        return
+
+    new_crontab = existing_crontab + f"\n{command}\n"
+    subprocess.run(['crontab'], input=new_crontab.encode(), check=True)
