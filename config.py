@@ -1,5 +1,4 @@
-import os
-
-BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
-CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "")
-BACKUP_EXPIRE_DAYS = int(os.getenv("BACKUP_EXPIRE_DAYS", 7))
+BOT_TOKEN = '7033706465:AAHtgWj3pAFgl00nXuPEwRBO0dVdFVJCyJo'
+CHAT_ID = '6551838718'
+DIRECTORIES = ['/root/mamad','/root/ali',]
+BACKUP_EXPIRE_DAYS = 7

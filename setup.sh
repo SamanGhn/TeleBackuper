@@ -1,113 +1,89 @@
 #!/bin/bash
 
+# 🎨 رنگ‌ها
+GREEN='\033[1;32m'
+RED='\033[1;31m'
+YELLOW='\033[1;33m'
+CYAN='\033[1;36m'
+BOLD='\033[1m'
+RESET='\033[0m'
+
 CONFIG_FILE="config.py"
-CRON_FILE="/etc/cron.d/telebackuper"
-SCRIPT_PATH="$(realpath main.py)"
+SCRIPT_PATH="$(pwd)/main.py"
 PYTHON_PATH=$(which python3)
 
-GREEN="\033[0;32m"
-RED="\033[0;31m"
-CYAN="\033[0;36m"
-YELLOW="\033[1;33m"
-RESET="\033[0m"
-
-show_banner() {
-    echo -e "${CYAN}"
-    echo "╔══════════════════════════════════════╗"
-    echo "║      🚀 TeleBackuper Installer       ║"
-    echo "╚══════════════════════════════════════╝"
+function show_banner() {
+    clear
+    echo -e "${BOLD}${CYAN}"
+    echo "╔═════════════════════════════════════════════════════════════╗"
+    echo "║                                                             ║"
+    echo "║           🔐  ${BOLD}TeleBackuper - Interactive Setup Menu${RESET}${CYAN}           ║"
+    echo "║                                                             ║"
+    echo "╚═════════════════════════════════════════════════════════════╝"
     echo -e "${RESET}"
 }
 
-install() {
-    echo -e "${YELLOW}🔑 Enter your Telegram Bot Token:${RESET}"
-    read -r BOT_TOKEN
+function install() {
+    echo -e "${BOLD}${CYAN}🔑 Enter your Telegram Bot Token:${RESET}"
+    read BOT_TOKEN
 
-    echo -e "${YELLOW}🆔 Enter your numeric Chat ID:${RESET}"
-    read -r CHAT_ID
+    echo -e "${BOLD}${CYAN}🆔 Enter your numeric Chat ID:${RESET}"
+    read CHAT_ID
 
-    echo -e "${YELLOW}📂 Enter directories to backup (comma-separated):${RESET}"
-    read -r DIRS
+    echo -e "${BOLD}${CYAN}📂 Enter directories to backup (comma-separated):${RESET}"
+    read DIRS
 
-    echo -e "${YELLOW}⏱️  Enter interval in hours for cron job:${RESET}"
-    read -r INTERVAL
+    echo -e "${BOLD}${CYAN}⏱️  Enter interval in hours for cron job:${RESET}"
+    read interval
 
-    echo -e "${CYAN}🔧 Generating config.py ...${RESET}"
-    cat > "$CONFIG_FILE" <<EOF
-BOT_TOKEN = "${BOT_TOKEN}"
-CHAT_ID = "${CHAT_ID}"
-DIRECTORIES = [${DIRS//,/","}]
-BACKUP_EXPIRE_DAYS = 3
-EOF
+    echo -e "\n${YELLOW}🔧 Generating config.py ...${RESET}"
+    echo "BOT_TOKEN = '$BOT_TOKEN'" > $CONFIG_FILE
+    echo "CHAT_ID = '$CHAT_ID'" >> $CONFIG_FILE
+    echo "DIRECTORIES = [$(
+        IFS=',' read -ra ADDR <<< "$DIRS"
+        for i in "${ADDR[@]}"; do
+            printf "'%s'," "$(echo $i | xargs)"
+        done
+    )]" >> $CONFIG_FILE
+    echo "BACKUP_EXPIRE_DAYS = 7" >> $CONFIG_FILE
     echo -e "${GREEN}✅ config.py updated.${RESET}"
 
-    echo -e "${CYAN}📅 Adding cron job ...${RESET}"
-    (crontab -l 2>/dev/null; echo "0 */$INTERVAL * * * $PYTHON_PATH $SCRIPT_PATH > /dev/null 2>&1") | crontab -
-    echo -e "${GREEN}✅ Cron job added to run every $INTERVAL hour(s).${RESET}"
+    echo -e "\n${YELLOW}🔄 Setting up cron job...${RESET}"
+    (crontab -l 2>/dev/null; echo "0 */$interval * * * $PYTHON_PATH $SCRIPT_PATH >> /var/log/telebackuper.log 2>&1") | crontab -
+    echo -e "${GREEN}✅ Cron job added to run every $interval hour(s).${RESET}"
 
-    echo -e "${GREEN}✅ Installation complete!${RESET}"
+    echo -e "\n${CYAN}🚀 Sending first backup now...${RESET}"
+    $PYTHON_PATH $SCRIPT_PATH
+
+    echo -e "\n${GREEN}🎉 Installation complete!${RESET}"
+    echo -e "${CYAN}ℹ️  You can view logs with: ${BOLD}tail -f /var/log/telebackuper.log${RESET}"
+    read -p "$(echo -e "${YELLOW}⏎ Press Enter to return to menu...${RESET}")"
 }
 
-change_config() {
-    if [ ! -f "$CONFIG_FILE" ]; then
-        echo -e "${RED}⚠️ config.py not found. Please install first.${RESET}"
-        return
-    fi
-
-    echo -e "${YELLOW}What do you want to change? (bot/chat/dirs/expire):${RESET}"
-    read -r option
-
-    case $option in
-        bot)
-            echo -e "${YELLOW}Enter new Bot Token:${RESET}"
-            read -r new
-            sed -i "s/^BOT_TOKEN = .*/BOT_TOKEN = \"${new}\"/" "$CONFIG_FILE"
-            ;;
-        chat)
-            echo -e "${YELLOW}Enter new Chat ID:${RESET}"
-            read -r new
-            sed -i "s/^CHAT_ID = .*/CHAT_ID = \"${new}\"/" "$CONFIG_FILE"
-            ;;
-        dirs)
-            echo -e "${YELLOW}Enter new directories (comma-separated):${RESET}"
-            read -r new
-            sed -i "s|^DIRECTORIES = .*|DIRECTORIES = [${new//,/","}]|" "$CONFIG_FILE"
-            ;;
-        expire)
-            echo -e "${YELLOW}Enter new expiration days for backups:${RESET}"
-            read -r new
-            sed -i "s/^BACKUP_EXPIRE_DAYS = .*/BACKUP_EXPIRE_DAYS = ${new}/" "$CONFIG_FILE"
-            ;;
-        *)
-            echo -e "${RED}❌ Invalid option.${RESET}"
-            ;;
-    esac
-
-    echo -e "${GREEN}✅ Configuration updated.${RESET}"
+function change_config() {
+    echo -e "\n${YELLOW}🔧 Opening config.py for editing...${RESET}"
+    sleep 1
+    ${EDITOR:-nano} config.py
 }
 
-exit_script() {
-    echo -e "${CYAN}👋 Exiting...${RESET}"
+function exit_script() {
+    echo -e "\n${RED}👋 Exiting...${RESET}"
     exit 0
 }
 
-# Menu
 while true; do
     show_banner
-    echo -e "${YELLOW}1) 🛠 Install / Reinstall"
-    echo -e "2) ⚙️  Change Config"
-    echo -e "3) ❌ Exit${RESET}"
-    echo
-    read -rp "Enter your choice [1-3]: " choice
-    echo
-
+    echo -e "${BOLD}${YELLOW}Please select an option:${RESET}"
+    echo ""
+    echo -e "${GREEN}[1]${RESET} 🔧  Install / Reconfigure"
+    echo -e "${GREEN}[2]${RESET} ✏️   Edit config.py"
+    echo -e "${GREEN}[3]${RESET} ❌  Exit"
+    echo ""
+    read -p "$(echo -e "${BOLD}➡️  Enter your choice [1-3]: ${RESET}")" choice
     case $choice in
         1) install ;;
         2) change_config ;;
         3) exit_script ;;
-        *) echo -e "${RED}❌ Invalid choice. Try again.${RESET}" ;;
+        *) echo -e "\n${RED}❌ Invalid option. Please choose 1-3.${RESET}"; sleep 2 ;;
     esac
-
-    echo -e "${CYAN}\nPress Enter to return to menu...${RESET}"
-    read
 done
