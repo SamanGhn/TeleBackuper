@@ -14,14 +14,14 @@ PYTHON_PATH=$(which python3)
 
 function show_banner() {
     clear
-    echo -e "${BOLD}${CYAN}"
-    echo "╔═════════════════════════════════════════════════════════════╗"
-    echo "║                                                             ║"
-    echo "║           🔐  ${BOLD}TeleBackuper - Interactive Setup Menu${RESET}${CYAN}           ║"
-    echo "║                                                             ║"
-    echo "╚═════════════════════════════════════════════════════════════╝"
-    echo -e "${RESET}"
+    echo -e "\033[1;36m╔══════════════════════════════════════════════════════════════╗\033[0m"
+    echo -e "\033[1;36m║                                                              ║\033[0m"
+    echo -e "\033[1;36m║     🔐  \033[1mTeleBackuper - Interactive Setup Menu\033[0m\033[1;36m     ║\033[0m"
+    echo -e "\033[1;36m║                                                              ║\033[0m"
+    echo -e "\033[1;36m╚══════════════════════════════════════════════════════════════╝\033[0m"
+    echo ""
 }
+
 
 function install() {
     echo -e "${BOLD}${CYAN}🔑 Enter your Telegram Bot Token:${RESET}"
@@ -73,11 +73,10 @@ function exit_script() {
 
 while true; do
     show_banner
-    echo -e "${BOLD}${YELLOW}Please select an option:${RESET}"
-    echo ""
-    echo -e "${GREEN}[1]${RESET} 🔧  Install / Reconfigure"
-    echo -e "${GREEN}[2]${RESET} ✏️   Edit config.py"
-    echo -e "${GREEN}[3]${RESET} ❌  Exit"
+    echo -e "${BOLD}${YELLOW}📋 Please select an option:${RESET}\n"
+    echo -e "  ${GREEN}[1]${RESET} 🔧  ${BOLD}Install / Reconfigure${RESET}"
+    echo -e "  ${GREEN}[2]${RESET} ✏️   ${BOLD}Edit config.py${RESET}"
+    echo -e "  ${GREEN}[3]${RESET} ❌  ${BOLD}Exit${RESET}"
     echo ""
     read -p "$(echo -e "${BOLD}➡️  Enter your choice [1-3]: ${RESET}")" choice
     case $choice in
