@@ -1,0 +1,16 @@
+# Runtime data
+runtime/
+backups/
+
+# Secrets
+*.env
+*.token
+
+# Logs & archives
+*.log
+*.tar.gz
+
+# OS / Editor
+.DS_Store
+.idea/
+.vscode/
